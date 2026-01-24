@@ -115,13 +115,23 @@ class AnimalModel(nn.Module):
            nn.Conv2d(hidden_units * 4, hidden_units * 8, 3, padding=1),
            nn.BatchNorm2d(hidden_units * 8),
            nn.ReLU(),
+           nn.MaxPool2d(2),
+           
+           nn.Conv2d(hidden_units * 8, hidden_units * 16, 3, padding=1),
+           nn.BatchNorm2d(hidden_units * 16),
+           nn.ReLU(),
+           nn.MaxPool2d(2),
+           
+           nn.Conv2d(hidden_units * 16, hidden_units * 32, 3, padding=1),
+           nn.BatchNorm2d(hidden_units * 32),
+           nn.ReLU(),
 
            nn.AdaptiveAvgPool2d((1, 1)),
         )
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(hidden_units * 8, 512),
+            nn.Linear(hidden_units * 32, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(),
             nn.Dropout(0.5),
@@ -181,7 +191,7 @@ def test_step(model: torch.nn.Module, data_loader: torch.utils.data.DataLoader, 
     return test_loss, test_acc
 
 loss_fn = nn.CrossEntropyLoss()
-epochs = 500
+epochs = 100
 optimizer = torch.optim.Adam(params=model.parameters(), lr=0.001) 
 # scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr = 0.03, epochs=50, steps_per_epoch=len(train_loader), pct_start=0.3)
 
@@ -200,14 +210,11 @@ for epoch in range(epochs):
 
 from pathlib import Path
 
-# 1. Create models directory
 MODEL_PATH = Path("models")
 MODEL_PATH.mkdir(parents=True, exist_ok=True)
 
-# 2. Create model save path
 MODEL_NAME = "animal_recognition_model"
 MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME
 
-# 3. Save the model state dict
 print(f"Saving to: {MODEL_SAVE_PATH}")
 torch.save(model.state_dict(), MODEL_SAVE_PATH)
